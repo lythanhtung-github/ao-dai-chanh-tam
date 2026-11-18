@@ -75,6 +75,9 @@ function renderOrders() {
     const thProductLabel = document.getElementById('th-product-label');
     const paginationInfo = document.getElementById('pagination-info');
     const summaryBar = document.getElementById('orders-summary');
+    // Bảng desktop: giữ class gốc "hidden md:block" (mobile chỉ thấy card),
+    // chỉ bật/tắt "md:hidden" để  everywhere khi danh sách rỗng
+    const tableWrap = desktopBody.parentElement.parentElement;
 
     // Update Table Header based on type (span bên trong nút sort của th)
     if (thProductLabel) thProductLabel.innerText = currentListType === 'aodai' ? 'Màu áo' : 'Số lượng túi';
@@ -99,18 +102,19 @@ function renderOrders() {
     mobileContainer.innerHTML = '';
     desktopBody.innerHTML = '';
     document.getElementById('pagination-controls').innerHTML = '';
+    document.getElementById('pagination-controls-top').innerHTML = '';
 
     if (filtered.length === 0) {
         emptyState.classList.remove('hidden');
         mobileContainer.classList.add('hidden');
-        desktopBody.parentElement.parentElement.classList.add('hidden');
+        tableWrap.classList.add('md:hidden');
         if (paginationInfo) paginationInfo.innerText = '';
         return;
     }
 
     emptyState.classList.add('hidden');
     mobileContainer.classList.remove('hidden');
-    desktopBody.parentElement.parentElement.classList.remove('hidden');
+    tableWrap.classList.remove('md:hidden');
     
     if (paginationInfo) {
         paginationInfo.innerText = `Hiển thị ${startIndex + 1} - ${endIndex} trên tổng số ${filtered.length} đơn hàng`;
@@ -222,27 +226,37 @@ function renderOrders() {
 }
 
 function renderPaginationControls(totalPages) {
-    const controlsContainer = document.getElementById('pagination-controls');
-    if (totalPages <= 1) return; 
+    // Render đồng bộ vào 2 vị trí: trên đầu danh sách và dưới cùng
+    const containers = [
+        document.getElementById('pagination-controls-top'),
+        document.getElementById('pagination-controls')
+    ].filter(Boolean);
 
+    containers.forEach(c => { c.innerHTML = ''; });
+    if (totalPages <= 1) return;
+    containers.forEach(c => fillPaginationContainer(c, totalPages));
+}
+
+function fillPaginationContainer(controlsContainer, totalPages) {
     // Prev Button
     const prevBtn = document.createElement('button');
     prevBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+    prevBtn.setAttribute('aria-label', 'Trang trước');
     prevBtn.className = `w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-colors ${currentPage === 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'}`;
     prevBtn.disabled = currentPage === 1;
-    prevBtn.onclick = () => { 
-        if(currentPage > 1) { 
-            currentPage--; 
-            renderOrders(); 
+    prevBtn.onclick = () => {
+        if(currentPage > 1) {
+            currentPage--;
+            renderOrders();
             document.getElementById('main-scroll').scrollTop = 0;
-        } 
+        }
     };
     controlsContainer.appendChild(prevBtn);
 
-    // Page Numbers 
+    // Page Numbers
     let startPage = Math.max(1, currentPage - 1);
     let endPage = Math.min(totalPages, currentPage + 1);
-    
+
     if (currentPage === 1) endPage = Math.min(totalPages, 3);
     if (currentPage === totalPages) startPage = Math.max(1, totalPages - 2);
 
@@ -273,14 +287,15 @@ function renderPaginationControls(totalPages) {
     // Next Button
     const nextBtn = document.createElement('button');
     nextBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+    nextBtn.setAttribute('aria-label', 'Trang sau');
     nextBtn.className = `w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-colors ${currentPage === totalPages ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'}`;
     nextBtn.disabled = currentPage === totalPages;
-    nextBtn.onclick = () => { 
-        if(currentPage < totalPages) { 
-            currentPage++; 
-            renderOrders(); 
+    nextBtn.onclick = () => {
+        if(currentPage < totalPages) {
+            currentPage++;
+            renderOrders();
             document.getElementById('main-scroll').scrollTop = 0;
-        } 
+        }
     };
     controlsContainer.appendChild(nextBtn);
 }

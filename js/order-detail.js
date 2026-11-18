@@ -168,6 +168,7 @@ function renderOrderDetail() {
             ${remaining > 0 ? `
                 <div class="flex flex-col sm:flex-row gap-2 mb-4">
                     <input type="number" id="detail-pay-amount" placeholder="Nhập số tiền nộp..." class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <input type="date" id="detail-pay-date" value="${parseDateToInputFormat(getTodayFormatted())}" title="Ngày nộp tiền" aria-label="Ngày nộp tiền" class="px-3 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-700 cursor-pointer">
                     <div class="relative flex-shrink-0">
                         <select id="detail-pay-method" class="w-full sm:w-auto pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 appearance-none cursor-pointer text-slate-700">
                             <option value="Tiền mặt">Tiền mặt</option>
@@ -191,7 +192,7 @@ function renderOrderDetail() {
         
         <div class="mt-8 border-t border-slate-100 pt-6 flex flex-col gap-3">
             <button onclick="syncCurrentOrderDetail()" class="w-full bg-sky-500 hover:bg-sky-600 active:bg-sky-700 text-white font-bold py-3.5 px-4 rounded-xl transition-colors shadow-md flex justify-center items-center gap-2">
-                <i class="fa-solid fa-cloud-arrow-up"></i> LƯU & ĐỒNG BỘ LÊN CLOUD
+                <i class="fa-solid fa-floppy-disk"></i> LƯU
             </button>
             
             ${order.status !== 'HỦY' ? `
@@ -210,7 +211,7 @@ function renderOrderDetail() {
 function syncCurrentOrderDetail() {
     const order = orders.find(o => o.id === currentDetailOrderId);
     if (order) {
-        showToast('Đang đồng bộ dữ liệu lên Cloud...', 'info');
+        showToast('Đang lưu thay đổi lên Cloud...', 'info');
         syncToGoogleSheets('UPDATE', order);
     }
 }
@@ -230,8 +231,9 @@ function toggleColorState(orderId, color, field, isChecked) {
         
         evaluateOrderStatus(orders[idx]);
         saveData();
+        markPendingSync(orders[idx].id);
         renderOrderDetail();
-        renderOrders(); 
+        renderOrders();
     }
 }
 
@@ -240,6 +242,7 @@ function updateColorDate(orderId, color, field, value) {
     if (idx > -1) {
         orders[idx].chi_tiet_mau[color][field] = formatDateFromInput(value);
         saveData();
+        markPendingSync(orders[idx].id);
         renderOrderDetail();
     }
 }
@@ -259,6 +262,7 @@ function updateBagDelivery(orderId, action) {
         
         evaluateOrderStatus(order);
         saveData();
+        markPendingSync(order.id);
         renderOrderDetail();
         renderOrders();
     }
@@ -267,9 +271,11 @@ function updateBagDelivery(orderId, action) {
 function addPaymentInstallment(orderId) {
     const input = document.getElementById('detail-pay-amount');
     const methodSelect = document.getElementById('detail-pay-method');
+    const dateInput = document.getElementById('detail-pay-date');
     let amt = parseInt(input.value);
     const method = methodSelect ? methodSelect.value : 'Tiền mặt';
-    
+    const ngay = (dateInput && dateInput.value) ? formatDateFromInput(dateInput.value) : getTodayFormatted();
+
     if (!amt || amt <= 0) return;
 
     const idx = orders.findIndex(o => o.id === orderId);
@@ -277,17 +283,17 @@ function addPaymentInstallment(orderId) {
         const order = orders[idx];
         const paid = getPaidAmount(order);
         const remaining = order.price - paid;
-        
-        if (amt > remaining) amt = remaining; 
-        
-        const today = new Date().toLocaleDateString('vi-VN');
-        order.lich_su_thanh_toan.push({ ngay: today, so_tien: amt, phuong_thuc: method });
-        
+
+        if (amt > remaining) amt = remaining;
+
+        order.lich_su_thanh_toan.push({ ngay: ngay, so_tien: amt, phuong_thuc: method });
+
         evaluateOrderStatus(order);
         saveData();
+        markPendingSync(order.id);
         renderOrderDetail();
         renderOrders();
-        showToast(`Đã ghi nhận ${formatMoney(amt)} (Chưa đồng bộ)`);
+        showToast(`Đã ghi nhận ${formatMoney(amt)} ngày ${ngay} (Chưa đồng bộ)`);
     }
 }
 
@@ -302,6 +308,7 @@ function updatePaymentDate(orderId, index, value) {
     }
     installment.ngay = formatDateFromInput(value);
     saveData();
+    markPendingSync(orderId);
     renderOrderDetail();
     renderOrders();
     showToast(`Đã cập nhật ngày nộp tiền: ${installment.ngay} (Chưa đồng bộ)`, 'info');
@@ -338,15 +345,15 @@ function evaluateOrderStatus(order) {
 }
 
 function cancelOrder(id) {
-    if (!confirm('Bạn chắc chắn muốn HỦY đơn hàng này? (có thể phục hồi sau)')) return;
+    if (!confirm('Bạn chắc chắn muốn HỦY đơn hàng này? (nhấn nút LƯU để đồng bộ lên Cloud)')) return;
     const idx = orders.findIndex(o => o.id === id);
     if (idx > -1) {
         orders[idx].status = 'HỦY';
         saveData();
-        syncToGoogleSheets('UPDATE', orders[idx]);
+        markPendingSync(orders[idx].id);
         renderOrderDetail();
         renderOrders();
-        showToast('Đã hủy đơn hàng');
+        showToast('Đã hủy đơn hàng (Chưa đồng bộ)', 'info');
     }
 }
 
@@ -355,10 +362,10 @@ function restoreOrder(id) {
     if (idx > -1) {
         evaluateOrderStatus(orders[idx]);
         saveData();
-        syncToGoogleSheets('UPDATE', orders[idx]);
+        markPendingSync(orders[idx].id);
         renderOrderDetail();
         renderOrders();
-        showToast('Đã phục hồi đơn hàng');
+        showToast('Đã phục hồi đơn hàng (Chưa đồng bộ)', 'info');
     }
 }
 
