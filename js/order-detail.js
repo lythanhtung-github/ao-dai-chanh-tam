@@ -37,8 +37,12 @@ function renderOrderDetail() {
     if (!order) return;
 
     const body = document.getElementById('detail-body');
-    const paid = (order.lich_su_thanh_toan || []).reduce((s, p) => s + p.so_tien, 0);
+    const paid = getPaidAmount(order);
     const remaining = Math.max(0, order.price - paid);
+    const style = STATUS_STYLES[order.status] || STATUS_STYLES['MỚI'];
+    const escName = escapeHtml(order.name);
+    const escGroup = escapeHtml(order.group);
+    const escStatus = escapeHtml(order.status);
 
     let progressHtml = '';
     
@@ -112,7 +116,7 @@ function renderOrderDetail() {
                 <div class="flex justify-between items-center text-sm p-3 bg-slate-50 border border-slate-100 rounded-lg gap-2">
                     <div class="text-slate-500 font-medium flex items-center flex-wrap gap-1">
                         <i class="fa-regular fa-clock mr-1"></i>
-                        <input type="date" onchange="updatePaymentDate('${order.id}', ${idx}, this.value)" value="${parseDateToInputFormat(p.ngay)}" title="Chỉnh sửa ngày nộp tiền" class="text-[13px] font-medium px-2 py-1 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 text-slate-700 bg-white cursor-pointer">
+                        <input type="date" onchange="updatePaymentDate('${order.id}', ${idx}, this.value)" value="${escapeHtml(parseDateToInputFormat(p.ngay))}" title="Chỉnh sửa ngày nộp tiền" class="text-[13px] font-medium px-2 py-1 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500 text-slate-700 bg-white cursor-pointer">
                         ${p.phuong_thuc ? methodBadge : ''}
                     </div>
                     <div class="font-bold text-slate-700 whitespace-nowrap">${formatMoney(p.so_tien)}</div>
@@ -127,10 +131,10 @@ function renderOrderDetail() {
     body.innerHTML = `
         <div class="mb-6 flex justify-between items-start">
             <div>
-                <h4 class="font-bold text-xl text-slate-900">${order.name}</h4>
-                <p class="text-sm text-slate-500 font-medium">${order.gender ? order.gender + ' • ' : ''}${order.group}</p>
-                <span class="inline-block mt-2 px-2.5 py-1 rounded-md text-[11px] font-bold ${STATUS_STYLES[order.status].bg} ${STATUS_STYLES[order.status].text}">
-                    ${order.status}
+                <h4 class="font-bold text-xl text-slate-900">${escName}</h4>
+                <p class="text-sm text-slate-500 font-medium">${order.gender ? escapeHtml(order.gender) + ' • ' : ''}${escGroup}</p>
+                <span class="inline-block mt-2 px-2.5 py-1 rounded-md text-[11px] font-bold ${style.bg} ${style.text}">
+                    ${escStatus}
                 </span>
             </div>
             <button onclick="editOrderInfo('${order.id}')" class="text-slate-500 hover:text-sky-600 hover:bg-sky-50 bg-slate-100 p-2 px-3 rounded-lg text-sm font-semibold transition-colors">
@@ -271,7 +275,7 @@ function addPaymentInstallment(orderId) {
     const idx = orders.findIndex(o => o.id === orderId);
     if (idx > -1) {
         const order = orders[idx];
-        const paid = (order.lich_su_thanh_toan || []).reduce((s, p) => s + p.so_tien, 0);
+        const paid = getPaidAmount(order);
         const remaining = order.price - paid;
         
         if (amt > remaining) amt = remaining; 
@@ -306,7 +310,7 @@ function updatePaymentDate(orderId, index, value) {
 function evaluateOrderStatus(order) {
     if (order.status === 'HỦY') return;
 
-    const paid = (order.lich_su_thanh_toan || []).reduce((s, p) => s + p.so_tien, 0);
+    const paid = getPaidAmount(order);
     
     if (order.type === 'aodai') {
         const totalColors = order.colors.length;

@@ -220,20 +220,21 @@ function editOrderInfo(id) {
     const order = orders.find(o => o.id === id);
     if (!order) return;
 
-    resetFormFieldsOnly();
-    switchFormType(order.type);
-    
+    // Vào view form trước (switchTab tự reset form khi chưa có f-id),
+    // rồi mới đổ dữ liệu đơn vào để autoSetPrice không ghi đè giá đã chọn
+    switchTab(`form-${order.type}`);
+
     document.getElementById('f-id').value = order.id;
     document.getElementById('f-name').value = order.name;
     document.getElementById('f-group').value = order.group;
-    
+
     if (order.type === 'aodai') {
         document.querySelector(`input[name="f-gender"][value="${order.gender}"]`).checked = true;
         order.colors.forEach(c => {
             const cb = document.querySelector(`input[name="f-colors"][value="${c}"]`);
             if(cb) cb.checked = true;
         });
-        
+
         const numColors = order.colors.length || 1;
         const unitPrice = order.price / numColors;
 
@@ -251,27 +252,16 @@ function editOrderInfo(id) {
             document.getElementById('f-custom-price').value = unitPrice;
         }
         handlePriceSelectChange();
-        
+
     } else {
         document.getElementById('f-bag-qty').value = order.quantity;
         updateFinalPriceDisplay();
     }
-    
+
     document.getElementById('f-cancel-btn').classList.remove('hidden');
     document.getElementById('form-desktop-title').innerText = 'Chỉnh sửa thông tin cơ bản';
-    
-    // Bypass full reset in switchTab
-    currentTab = `form-${order.type}`;
-    ['dashboard', 'orders', 'prices', 'form'].forEach(id => {
-        document.getElementById(`view-${id}`).classList.add('hidden');
-        document.getElementById(`view-${id}`).classList.remove('block');
-    });
-    document.getElementById('view-form').classList.remove('hidden');
-    document.getElementById('view-form').classList.add('block');
-    
     document.getElementById('mobile-title').innerText = "Chỉnh sửa đơn";
     document.getElementById('desktop-title').innerText = "Chỉnh sửa đơn hàng";
-    updateNavStyles(`form-${order.type}`);
 }
 
 function cancelEdit() {

@@ -39,6 +39,38 @@ function savePrices() {
     if(currentTab === 'prices') renderPrices();
 }
 
+// --- DANH SÁCH ĐƠN CHƯA ĐỒNG BỘ (badge + thử lại) ---
+function loadPendingSync() {
+    try {
+        const raw = localStorage.getItem(STORAGE_PENDING_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        pendingSyncIds = Array.isArray(parsed) ? parsed.filter(x => typeof x === 'string') : [];
+    } catch (e) {
+        pendingSyncIds = [];
+    }
+}
+
+function savePendingSync() {
+    localStorage.setItem(STORAGE_PENDING_KEY, JSON.stringify(pendingSyncIds));
+}
+
+function markPendingSync(id) {
+    if (!pendingSyncIds.includes(id)) {
+        pendingSyncIds.push(id);
+        savePendingSync();
+    }
+    updateSyncBadge();
+}
+
+function clearPendingSync(id) {
+    const i = pendingSyncIds.indexOf(id);
+    if (i > -1) {
+        pendingSyncIds.splice(i, 1);
+        savePendingSync();
+    }
+    updateSyncBadge();
+}
+
 function seedDemoData() {
     orders = [
         { 

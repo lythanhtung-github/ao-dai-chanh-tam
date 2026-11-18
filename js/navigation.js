@@ -30,9 +30,9 @@ function toggleMenu(menuId, iconId) {
 
 function switchTab(tabId) {
     currentTab = tabId;
-    
+
     // Hide all views
-    ['dashboard', 'orders', 'prices', 'form'].forEach(id => {
+    VIEW_IDS.forEach(id => {
         document.getElementById(`view-${id}`).classList.add('hidden');
         document.getElementById(`view-${id}`).classList.remove('block');
     });

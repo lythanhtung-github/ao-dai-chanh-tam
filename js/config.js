@@ -30,6 +30,7 @@ const COLOR_CHIP_IDS = [
 const BAG_PRICE = 60000;
 const STORAGE_KEY = 'chanhtam_orders_v3';
 const STORAGE_PRICES_KEY = 'chanhtam_prices_v3';
+const STORAGE_PENDING_KEY = 'chanhtam_pending_sync_v1';
 
 // --- STATE ---
 let orders = [];
@@ -39,6 +40,7 @@ let currentListType = 'aodai'; // 'aodai' or 'tui'
 let currentPage = 1;
 let currentSort = { key: null, dir: 'asc' }; // null = mặc định (mới nhất)
 let colorFilterSelection = []; // chips màu đang chọn (đơn có BẤT KỲ màu nào trong danh sách)
+let pendingSyncIds = []; // các đơn đã gửi/thuộc gửi đồng bộ lên Cloud nhưng chưa xác nhận
 const ITEMS_PER_PAGE = 20;
 
 // Các view chính của app (dùng khi bật/tắt hiển thị)

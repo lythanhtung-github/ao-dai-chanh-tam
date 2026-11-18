@@ -128,8 +128,9 @@ function renderDashboard() {
                         </div>
                     </div>
                 </div>
-            `;
+            `);
         });
+        yearlyContainer.innerHTML = yearCards.join('');
     }
 }
 

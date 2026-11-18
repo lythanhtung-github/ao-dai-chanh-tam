@@ -33,17 +33,49 @@ function syncToGoogleSheets(action, order) {
         };
 
         // Gửi thẳng payload chuỗi JSON (Không dùng headers để tránh Preflight CORS bị chặn)
+        // no-cors không đọc được phản hồi -> đánh dấu "chưa đồng bộ" cho tới khi request gửi thành công
+        markPendingSync(order.id);
         fetch(APPS_SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
             body: JSON.stringify(payload)
         }).then(() => {
             console.log('Đã gửi yêu cầu đồng bộ lên Cloud:', action, order.id);
-        }).catch(e => console.error('Lỗi khi fetch đồng bộ:', e));
+            clearPendingSync(order.id);
+        }).catch(e => {
+            console.error('Lỗi khi fetch đồng bộ:', e);
+            updateSyncBadge();
+        });
 
     } catch (error) {
         console.error('Lỗi hàm syncToGoogleSheets:', error);
     }
+}
+
+// --- BADGE & THỬ LẠI ĐỒNG BỘ ---
+function updateSyncBadge() {
+    const count = pendingSyncIds.length;
+    [['sync-badge', 'sync-badge-count'], ['sync-badge-mobile', 'sync-badge-count-mobile']].forEach(([btnId, countId]) => {
+        const btn = document.getElementById(btnId);
+        const countEl = document.getElementById(countId);
+        if (!btn || !countEl) return;
+        if (count > 0) {
+            btn.classList.remove('hidden');
+            countEl.innerText = count;
+        } else {
+            btn.classList.add('hidden');
+        }
+    });
+}
+
+function retryPendingSync() {
+    if (pendingSyncIds.length === 0) {
+        showToast('Mọi đơn hàng đã được đồng bộ.', 'info');
+        return;
+    }
+    const targets = orders.filter(o => pendingSyncIds.includes(o.id));
+    showToast(`Đang thử đồng bộ lại ${targets.length} đơn...`, 'info');
+    targets.forEach(o => syncToGoogleSheets('UPDATE', o));
 }
 
 // --- GOOGLE SHEETS DATA FETCH ---
