@@ -171,8 +171,8 @@ function renderOrderDetail() {
                     <input type="date" id="detail-pay-date" value="${parseDateToInputFormat(getTodayFormatted())}" title="Ngày nộp tiền" aria-label="Ngày nộp tiền" class="px-3 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-700 cursor-pointer">
                     <div class="relative flex-shrink-0">
                         <select id="detail-pay-method" class="w-full sm:w-auto pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 appearance-none cursor-pointer text-slate-700">
+                            <option value="Chuyển khoản" selected>Chuyển khoản</option>
                             <option value="Tiền mặt">Tiền mặt</option>
-                            <option value="Chuyển khoản">Chuyển khoản</option>
                         </select>
                         <svg xmlns="http://www.w3.org/2000/svg" class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
                     </div>
@@ -273,7 +273,7 @@ function addPaymentInstallment(orderId) {
     const methodSelect = document.getElementById('detail-pay-method');
     const dateInput = document.getElementById('detail-pay-date');
     let amt = parseInt(input.value);
-    const method = methodSelect ? methodSelect.value : 'Tiền mặt';
+    const method = methodSelect ? methodSelect.value : 'Chuyển khoản';
     const ngay = (dateInput && dateInput.value) ? formatDateFromInput(dateInput.value) : getTodayFormatted();
 
     if (!amt || amt <= 0) return;
