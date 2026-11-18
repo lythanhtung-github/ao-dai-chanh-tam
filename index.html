@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Quản Lý Áo Dài & Túi Chánh Tâm</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex overflow-hidden">
+
+    <!-- OVERLAY FOR MOBILE SIDEBAR -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-30 hidden md:hidden transition-opacity opacity-0 duration-300"></div>
+
+    <!-- SIDEBAR (DRAWER ON MOBILE, FIXED ON DESKTOP) -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 flex flex-col transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 shadow-xl md:shadow-sm">
+        <div class="h-14 md:h-16 flex items-center justify-between px-6 border-b border-slate-100 flex-shrink-0">
+            <div class="flex items-center">
+                <i class="fa-solid fa-fan text-sky-500 text-xl mr-3"></i>
+                <h1 class="font-bold text-lg tracking-tight text-slate-900">Chánh Tâm</h1>
+            </div>
+            <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-slate-600 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1.5 no-scrollbar">
+            
+            <!-- Dashboard -->
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition-colors text-slate-500 hover:bg-slate-50">
+                <i class="fa-solid fa-chart-pie w-6 text-lg"></i> Tổng quan
+            </button>
+
+            <!-- Parent: Áo Dài -->
+            <div class="pt-2">
+                <button onclick="toggleMenu('menu-aodai', 'icon-aodai')" class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-colors text-slate-700 hover:bg-slate-50">
+                    <div class="flex items-center"><i class="fa-solid fa-shirt w-6 text-lg text-sky-500"></i> Quản lý Áo dài</div>
+                    <i id="icon-aodai" class="fa-solid fa-chevron-right text-xs text-slate-400 transition-transform duration-200"></i>
+                </button>
+                <div id="menu-aodai" class="hidden flex-col gap-1 px-2 mt-1">
+                    <button onclick="switchTab('orders-aodai')" id="nav-orders-aodai" class="nav-item w-full flex items-center pl-10 pr-4 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-500 hover:text-sky-600 hover:bg-sky-50">Danh sách đơn</button>
+                    <button onclick="switchTab('form-aodai')" id="nav-form-aodai" class="nav-item w-full flex items-center pl-10 pr-4 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-500 hover:text-sky-600 hover:bg-sky-50">Thêm mới</button>
+                    <button onclick="switchTab('prices')" id="nav-prices" class="nav-item w-full flex items-center pl-10 pr-4 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-500 hover:text-sky-600 hover:bg-sky-50">Quản lý bảng giá</button>
+                </div>
+            </div>
+
+            <!-- Parent: Túi -->
+            <div class="pt-2 border-t border-slate-100">
+                <button onclick="toggleMenu('menu-tui', 'icon-tui')" class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-colors text-slate-700 hover:bg-slate-50">
+                    <div class="flex items-center"><i class="fa-solid fa-bag-shopping w-6 text-lg text-amber-500"></i> Quản lý Túi</div>
+                    <i id="icon-tui" class="fa-solid fa-chevron-right text-xs text-slate-400 transition-transform duration-200"></i>
+                </button>
+                <div id="menu-tui" class="hidden flex-col gap-1 px-2 mt-1">
+                    <button onclick="switchTab('orders-tui')" id="nav-orders-tui" class="nav-item w-full flex items-center pl-10 pr-4 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-500 hover:text-amber-600 hover:bg-amber-50">Danh sách đơn</button>
+                    <button onclick="switchTab('form-tui')" id="nav-form-tui" class="nav-item w-full flex items-center pl-10 pr-4 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-500 hover:text-amber-600 hover:bg-amber-50">Thêm mới</button>
+                </div>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col relative overflow-hidden bg-slate-50/50">
+        
+        <!-- MOBILE TOP APP BAR -->
+        <header class="md:hidden h-14 bg-sky-500 text-white border-b border-sky-600 flex items-center justify-between px-4 sticky top-0 z-20 shadow-sm flex-shrink-0">
+            <button onclick="toggleSidebar()" class="text-white p-2 -ml-2 rounded-lg hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-300">
+                <i class="fa-solid fa-bars text-lg"></i>
+            </button>
+            <h1 class="font-bold text-base text-white absolute left-1/2 transform -translate-x-1/2" id="mobile-title">Tổng quan</h1>
+            <div class="w-8"></div> <!-- Spacer -->
+        </header>
+
+        <!-- DESKTOP HEADER -->
+        <header class="h-16 bg-sky-500 text-white border-b border-sky-600 hidden md:flex items-center justify-between px-8 sticky top-0 z-10 flex-shrink-0">
+            <h2 id="desktop-title" class="text-xl font-bold text-white">Tổng quan hệ thống</h2>
+            <div class="text-sm font-medium text-sky-50 bg-sky-600 py-1.5 px-3 rounded-full flex items-center border border-sky-400/50">
+                <div class="w-2 h-2 rounded-full bg-emerald-400 mr-2 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div> Đang hoạt động
+            </div>
+        </header>
+
+        <!-- SCROLLABLE VIEWS -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 no-scrollbar relative" id="main-scroll">
+            
+            <!-- VIEW: DASHBOARD -->
+            <div id="view-dashboard" class="fade-in max-w-6xl mx-auto space-y-6 hidden">
+                
+                <!-- Ao Dai Stats Grid -->
+                <div>
+                    <h3 class="font-bold text-slate-800 mb-3 text-sm md:text-base"><i class="fa-solid fa-shirt mr-2 text-sky-500"></i>Thống kê Áo Dài</h3>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                            <div class="text-slate-500 text-xs font-semibold mb-1">TỔNG ĐƠN</div>
+                            <div class="text-2xl md:text-3xl font-bold text-slate-900" id="stat-ad-total">0</div>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                            <div class="text-slate-500 text-xs font-semibold mb-1">HOÀN TẤT</div>
+                            <div class="text-2xl md:text-3xl font-bold text-emerald-600" id="stat-ad-completed">0</div>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                            <div class="text-slate-500 text-xs font-semibold mb-1">ĐÃ THU</div>
+                            <div class="text-lg md:text-xl font-bold text-slate-900 truncate" id="stat-ad-collected">0 đ</div>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                            <div class="text-slate-500 text-xs font-semibold mb-1">CÒN LẠI</div>
+                            <div class="text-lg md:text-xl font-bold text-rose-600 truncate" id="stat-ad-remaining">0 đ</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bags Stats Grid -->
+                <div>
+                    <h3 class="font-bold text-slate-800 mb-3 text-sm md:text-base mt-2"><i class="fa-solid fa-bag-shopping mr-2 text-amber-500"></i>Thống kê Túi</h3>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                            <div class="text-slate-500 text-xs font-semibold mb-1">TỔNG TÚI ĐẶT</div>
+                            <div class="text-2xl md:text-3xl font-bold text-slate-900" id="stat-bag-total">0</div>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                            <div class="text-slate-500 text-xs font-semibold mb-1">ĐÃ GIAO</div>
+                            <div class="text-2xl md:text-3xl font-bold text-emerald-600" id="stat-bag-delivered">0</div>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                            <div class="text-slate-500 text-xs font-semibold mb-1">ĐÃ THU</div>
+                            <div class="text-lg md:text-xl font-bold text-slate-900 truncate" id="stat-bag-collected">0 đ</div>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                            <div class="text-slate-500 text-xs font-semibold mb-1">CÒN LẠI</div>
+                            <div class="text-lg md:text-xl font-bold text-rose-600 truncate" id="stat-bag-remaining">0 đ</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gender & Status Summary (Ao Dai only) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                        <h3 class="font-bold text-slate-800 mb-4 text-sm md:text-base">Tỉ lệ Giới tính (Áo dài)</h3>
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1 bg-rose-50 rounded-xl p-4 text-center border border-rose-100">
+                                <i class="fa-solid fa-venus text-rose-400 text-xl mb-1"></i>
+                                <div class="text-xs font-semibold text-rose-600 mb-1">NỮ</div>
+                                <div class="text-xl font-bold text-rose-700" id="stat-female">0</div>
+                            </div>
+                            <div class="flex-1 bg-blue-50 rounded-xl p-4 text-center border border-blue-100">
+                                <i class="fa-solid fa-mars text-blue-400 text-xl mb-1"></i>
+                                <div class="text-xs font-semibold text-blue-600 mb-1">NAM</div>
+                                <div class="text-xl font-bold text-blue-700" id="stat-male">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                        <h3 class="font-bold text-slate-800 mb-4 text-sm md:text-base">Tiến độ Đơn (Áo dài)</h3>
+                        <div id="status-progress" class="space-y-3">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Yearly Statistics -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                    <h3 class="font-bold text-slate-800 mb-4 text-sm md:text-base"><i class="fa-regular fa-calendar-check mr-2 text-slate-400"></i>Thống kê doanh thu theo năm</h3>
+                    <div id="yearly-stats-container" class="space-y-3">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Color Statistics -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-3">
+                        <h3 class="font-bold text-slate-800 text-sm md:text-base"><i class="fa-solid fa-palette mr-2 text-slate-400"></i>Thống kê màu áo dài</h3>
+                        <div class="flex gap-2">
+                            <div class="relative">
+                                <select id="color-stat-year" class="pl-3 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 appearance-none cursor-pointer">
+                                    <option value="ALL">Tất cả năm</option>
+                                </select>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                            </div>
+                            <div class="relative">
+                                <select id="color-stat-month" class="pl-3 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 appearance-none cursor-pointer">
+                                    <option value="ALL">Tất cả tháng</option>
+                                    <option value="1">Tháng 1</option>
+                                    <option value="2">Tháng 2</option>
+                                    <option value="3">Tháng 3</option>
+                                    <option value="4">Tháng 4</option>
+                                    <option value="5">Tháng 5</option>
+                                    <option value="6">Tháng 6</option>
+                                    <option value="7">Tháng 7</option>
+                                    <option value="8">Tháng 8</option>
+                                    <option value="9">Tháng 9</option>
+                                    <option value="10">Tháng 10</option>
+                                    <option value="11">Tháng 11</option>
+                                    <option value="12">Tháng 12</option>
+                                </select>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="color-stats-container" class="space-y-3">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: ORDERS (Shared for Ao Dai & Bags) -->
+            <div id="view-orders" class="fade-in max-w-6xl mx-auto space-y-4 hidden">
+                
+                <!-- Filters -->
+                <div class="flex flex-col gap-3">
+                    <div class="relative w-full">
+                        <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="search-input" placeholder="Tìm tên khách hàng..." class="w-full pl-10 pr-4 py-3 md:py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-sm">
+                    </div>
+                    <div class="flex overflow-x-auto gap-2 pb-2 no-scrollbar">
+                        <div class="relative">
+                            <select id="year-filter" class="flex-shrink-0 pl-4 pr-10 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none shadow-sm appearance-none cursor-pointer min-w-max">
+                                <!-- Populated by JS -->
+                            </select>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                        </div>
+                        <div class="relative">
+                            <select id="status-filter" class="flex-shrink-0 pl-4 pr-10 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none shadow-sm appearance-none cursor-pointer min-w-max">
+                                <option value="INCOMPLETE" selected>Đang thực hiện</option>
+                                <option value="ALL">Tất cả trạng thái</option>
+                                <option value="MỚI">Mới</option>
+                                <option value="ĐANG XỬ LÝ">Đang xử lý</option>
+                                <option value="HOÀN TẤT">Hoàn tất</option>
+                                <option value="HỦY">Hủy</option>
+                            </select>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                        </div>
+                        <div class="relative">
+                            <select id="payment-filter" class="flex-shrink-0 pl-4 pr-10 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none shadow-sm appearance-none cursor-pointer min-w-max">
+                                <option value="ALL">Mọi thanh toán</option>
+                                <option value="UNPAID">Chưa thanh toán</option>
+                                <option value="PARTIAL">Thanh toán một phần</option>
+                                <option value="PAID">Đã thanh toán đủ</option>
+                            </select>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                        </div>
+                        <div class="relative" id="color-filter-wrap">
+                            <select id="color-filter" class="flex-shrink-0 pl-4 pr-10 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none shadow-sm appearance-none cursor-pointer min-w-max">
+                                <option value="ALL">Tất cả màu áo</option>
+                                <option value="CAM">Cam</option>
+                                <option value="LAM">Lam</option>
+                                <option value="VÀNG">Vàng</option>
+                            </select>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                        </div>
+                        <div class="relative">
+                            <select id="group-filter" class="flex-shrink-0 pl-4 pr-10 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none shadow-sm appearance-none cursor-pointer min-w-max">
+                                <option value="ALL">Tất cả nhóm</option>
+                                <option value="CHÁNH TÂM NHỎ">Chánh Tâm Nhỏ</option>
+                                <option value="TÂM AN">Tâm An</option>
+                                <option value="THÍCH YÊU THƯƠNG">Thích Yêu Thương</option>
+                                <option value="NẮNG YÊU THƯƠNG">Nắng Yêu Thương</option>
+                                <option value="HÍT THỞ MỈM CƯỜI">Hít Thở Mỉm Cười</option>
+                                <option value="TƯƠNG SINH">Tương Sinh</option>
+                                <option value="KHÁC">Khác</option>
+                            </select>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                        </div>
+                        <button onclick="resetFilters()" class="flex-shrink-0 px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 transition-colors flex items-center gap-2" title="Xóa tất cả các bộ lọc">
+                            <i class="fa-solid fa-rotate-right"></i> Làm mới
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="hidden py-16 text-center">
+                    <div class="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+                        <i class="fa-solid fa-box-open text-2xl"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-800 mb-1">Không tìm thấy đơn hàng</h3>
+                    <p class="text-sm text-slate-500">Hãy thử thay đổi bộ lọc hoặc thêm mới.</p>
+                </div>
+
+                <!-- MOBILE LIST (Cards) -->
+                <div id="mobile-order-list" class="block md:hidden space-y-3">
+                    <!-- Rendered by JS -->
+                </div>
+
+                <!-- DESKTOP LIST (Table) -->
+                <div class="hidden md:block bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold text-xs uppercase">
+                            <tr>
+                                <th class="px-5 py-4"><button type="button" onclick="sortOrders('name')" class="flex items-center gap-1.5 uppercase hover:text-slate-700 transition-colors">Khách hàng <i id="sort-icon-name" class="fa-solid fa-sort text-[10px] text-slate-300"></i></button></th>
+                                <th class="px-5 py-4"><button type="button" onclick="sortOrders('date')" class="flex items-center gap-1.5 uppercase hover:text-slate-700 transition-colors">Ngày ĐK <i id="sort-icon-date" class="fa-solid fa-sort text-[10px] text-slate-300"></i></button></th>
+                                <th class="px-5 py-4"><button type="button" onclick="sortOrders('group')" class="flex items-center gap-1.5 uppercase hover:text-slate-700 transition-colors">Nhóm <i id="sort-icon-group" class="fa-solid fa-sort text-[10px] text-slate-300"></i></button></th>
+                                <th class="px-5 py-4" id="th-product-info"><button type="button" onclick="sortOrders('product')" class="flex items-center gap-1.5 uppercase hover:text-slate-700 transition-colors"><span id="th-product-label">Sản phẩm</span> <i id="sort-icon-product" class="fa-solid fa-sort text-[10px] text-slate-300"></i></button></th>
+                                <th class="px-5 py-4"><button type="button" onclick="sortOrders('price')" class="flex items-center gap-1.5 uppercase hover:text-slate-700 transition-colors">Giá tiền <i id="sort-icon-price" class="fa-solid fa-sort text-[10px] text-slate-300"></i></button></th>
+                                <th class="px-5 py-4"><button type="button" onclick="sortOrders('status')" class="flex items-center gap-1.5 uppercase hover:text-slate-700 transition-colors">Trạng thái <i id="sort-icon-status" class="fa-solid fa-sort text-[10px] text-slate-300"></i></button></th>
+                                <th class="px-5 py-4 text-right">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="desktop-order-tbody" class="divide-y divide-slate-100 text-slate-700">
+                            <!-- Rendered by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination Controls -->
+                <div class="flex flex-col items-center mt-4 pb-6 gap-3">
+                    <div id="pagination-info" class="text-sm text-slate-500 font-medium"></div>
+                    <div id="pagination-controls" class="flex justify-center items-center gap-2 flex-wrap">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- VIEW: PRICES -->
+            <div id="view-prices" class="fade-in max-w-6xl mx-auto space-y-4 hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-slate-800 text-lg md:text-xl hidden md:block">Quản lý Bảng Giá (Áo dài)</h3>
+                    <button onclick="openPriceModal()" class="px-4 py-2.5 bg-sky-500 text-white font-bold rounded-xl text-sm shadow-sm hover:bg-sky-600 active:bg-sky-700 transition-colors flex items-center gap-2 ml-auto md:ml-0">
+                        <i class="fa-solid fa-plus"></i> Thêm giá mới
+                    </button>
+                </div>
+                
+                <!-- MOBILE LIST (Cards) -->
+                <div id="mobile-price-list" class="block md:hidden space-y-3">
+                    <!-- Rendered by JS -->
+                </div>
+
+                <!-- DESKTOP LIST (Table) -->
+                <div class="hidden md:block bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold text-xs uppercase">
+                            <tr>
+                                <th class="px-5 py-4">Tên bảng giá</th>
+                                <th class="px-5 py-4">Giới tính</th>
+                                <th class="px-5 py-4 text-center">Năm</th>
+                                <th class="px-5 py-4 text-center">Từ ngày</th>
+                                <th class="px-5 py-4 text-center">Đến ngày</th>
+                                <th class="px-5 py-4">Giá tiền</th>
+                                <th class="px-5 py-4 text-center">Hiển thị</th>
+                            </tr>
+                        </thead>
+                        <tbody id="desktop-price-tbody" class="divide-y divide-slate-100 text-slate-700">
+                            <!-- Rendered by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- VIEW: FORM (Add/Edit) -->
+            <div id="view-form" class="fade-in max-w-xl mx-auto hidden pb-10">
+                <div class="bg-white rounded-2xl md:border md:border-slate-200 md:shadow-sm overflow-hidden">
+                    
+                    <div class="p-5 border-b border-slate-100 hidden md:block">
+                        <h3 class="font-bold text-lg text-slate-900" id="form-desktop-title">Thêm đơn mới</h3>
+                    </div>
+
+                    <form id="order-form" class="p-4 md:p-6 space-y-6" onsubmit="handleFormSubmit(event)">
+                        <input type="hidden" id="f-id" value="">
+                        <input type="hidden" id="f-type" value="aodai"> <!-- 'aodai' or 'tui' -->
+                        
+                        <!-- Họ Tên -->
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Họ và tên <span class="text-rose-500">*</span></label>
+                            <input type="text" id="f-name" required placeholder="Ví dụ: Nguyễn Văn A" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-base focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all">
+                        </div>
+
+                        <!-- Nhóm (Shared) -->
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Nhóm sinh hoạt <span class="text-rose-500">*</span></label>
+                            <div class="relative">
+                                <select id="f-group" required class="w-full pl-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-base focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all appearance-none cursor-pointer">
+                                    <option value="CHÁNH TÂM NHỎ">Chánh Tâm Nhỏ</option>
+                                    <option value="TÂM AN">Tâm An</option>
+                                    <option value="THÍCH YÊU THƯƠNG">Thích Yêu Thương</option>
+                                    <option value="NẮNG YÊU THƯƠNG">Nắng Yêu Thương</option>
+                                    <option value="HÍT THỞ MỈM CƯỜI">Hít Thở Mỉm Cười</option>
+                                    <option value="TƯƠNG SINH">Tương Sinh</option>
+                                    <option value="KHÁC">Khác / Chưa có nhóm</option>
+                                </select>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                            </div>
+                        </div>
+
+                        <!-- SECTION: ÁO DÀI ONLY -->
+                        <div id="form-section-aodai" class="space-y-6 block">
+                            <!-- Giới Tính (Radio Cards) -->
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Giới tính <span class="text-rose-500">*</span></label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <label class="relative cursor-pointer">
+                                        <input type="radio" name="f-gender" value="Nữ" checked class="peer sr-only" onchange="autoSetPrice()">
+                                        <div class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-center font-medium text-slate-600 peer-checked:bg-rose-50 peer-checked:border-rose-500 peer-checked:text-rose-700 transition-all">
+                                            <i class="fa-solid fa-venus mr-1"></i> Nữ
+                                        </div>
+                                    </label>
+                                    <label class="relative cursor-pointer">
+                                        <input type="radio" name="f-gender" value="Nam" class="peer sr-only" onchange="autoSetPrice()">
+                                        <div class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-center font-medium text-slate-600 peer-checked:bg-blue-50 peer-checked:border-blue-500 peer-checked:text-blue-700 transition-all">
+                                            <i class="fa-solid fa-mars mr-1"></i> Nam
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Màu Áo (Checkbox Cards) -->
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Màu áo <span class="text-xs font-normal text-slate-500">(Mỗi màu chọn = 1 áo)</span> <span class="text-rose-500">*</span></label>
+                                <div class="grid grid-cols-3 gap-2 md:gap-3">
+                                    <label class="relative cursor-pointer">
+                                        <input type="checkbox" name="f-colors" value="CAM" class="color-checkbox sr-only" onchange="autoSetPrice()">
+                                        <div class="px-2 py-3 bg-white border border-slate-200 rounded-xl flex flex-col items-center justify-center gap-1 transition-all">
+                                            <div class="w-6 h-6 rounded-full bg-orange-500 shadow-inner"></div>
+                                            <span class="text-xs font-semibold text-slate-700">Cam</span>
+                                        </div>
+                                    </label>
+                                    <label class="relative cursor-pointer">
+                                        <input type="checkbox" name="f-colors" value="LAM" class="color-checkbox sr-only" onchange="autoSetPrice()">
+                                        <div class="px-2 py-3 bg-white border border-slate-200 rounded-xl flex flex-col items-center justify-center gap-1 transition-all">
+                                            <div class="w-6 h-6 rounded-full bg-blue-500 shadow-inner"></div>
+                                            <span class="text-xs font-semibold text-slate-700">Lam</span>
+                                        </div>
+                                    </label>
+                                    <label class="relative cursor-pointer">
+                                        <input type="checkbox" name="f-colors" value="VÀNG" class="color-checkbox sr-only" onchange="autoSetPrice()">
+                                        <div class="px-2 py-3 bg-white border border-slate-200 rounded-xl flex flex-col items-center justify-center gap-1 transition-all">
+                                            <div class="w-6 h-6 rounded-full bg-yellow-400 shadow-inner"></div>
+                                            <span class="text-xs font-semibold text-slate-700">Vàng</span>
+                                        </div>
+                                    </label>
+                                </div>
+                                <p id="color-error" class="text-xs text-rose-500 mt-2 hidden font-medium"><i class="fa-solid fa-triangle-exclamation"></i> Vui lòng chọn ít nhất 1 màu áo.</p>
+                            </div>
+
+                            <!-- Bảng Giá Tiền (Select + Tùy chỉnh) -->
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Đơn giá Áo dài <span class="text-rose-500">*</span></label>
+                                <div class="relative">
+                                    <select id="f-price-select" onchange="handlePriceSelectChange()" class="w-full pl-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-base focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all appearance-none cursor-pointer">
+                                        <!-- Populated by JS -->
+                                    </select>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                </div>
+                            </div>
+                            
+                            <!-- Ô Nhập giá tùy chỉnh (Ẩn mặc định) -->
+                            <div id="f-custom-price-container" class="hidden">
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Nhập đơn giá tùy chỉnh (đ/áo) <span class="text-rose-500">*</span></label>
+                                <input type="number" id="f-custom-price" placeholder="Nhập số tiền..." oninput="updateFinalPriceDisplay()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-base focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all">
+                            </div>
+                        </div>
+
+                        <!-- SECTION: TÚI ONLY -->
+                        <div id="form-section-tui" class="space-y-6 hidden">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Số lượng túi (60.000 đ/chiếc) <span class="text-rose-500">*</span></label>
+                                <div class="flex items-center">
+                                    <button type="button" onclick="updateFormBagQuantity(-1)" class="w-12 h-12 flex items-center justify-center bg-slate-100 hover:bg-slate-200 rounded-l-xl border border-slate-200 text-lg font-bold text-slate-600 transition-colors">-</button>
+                                    <input type="number" id="f-bag-qty" value="1" min="1" oninput="updateFinalPriceDisplay()" class="w-24 h-12 text-center bg-white border-y border-slate-200 text-lg font-bold focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                    <button type="button" onclick="updateFormBagQuantity(1)" class="w-12 h-12 flex items-center justify-center bg-slate-100 hover:bg-slate-200 rounded-r-xl border border-slate-200 text-lg font-bold text-slate-600 transition-colors">+</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tính tiền Auto (Shared) -->
+                        <div class="bg-slate-900 rounded-2xl p-5 flex justify-between items-center shadow-lg mt-8">
+                            <div class="text-white/80 text-sm font-medium">Thành tiền:</div>
+                            <div id="f-calculated-price" class="text-2xl font-bold text-white tracking-tight">0 đ</div>
+                        </div>
+
+                        <!-- Nút Submit -->
+                        <div class="pt-4 pb-2 md:pb-0">
+                            <button type="submit" id="f-submit-btn" class="w-full bg-sky-500 hover:bg-sky-600 active:bg-sky-700 text-white font-bold text-lg py-4 rounded-xl transition-colors shadow-md flex justify-center items-center gap-2">
+                                <i class="fa-solid fa-floppy-disk"></i> LƯU ĐƠN HÀNG
+                            </button>
+                        </div>
+                        
+                        <!-- Nút Hủy (khi Edit) -->
+                        <div class="text-center pt-2 pb-8 md:pb-0 hidden" id="f-cancel-btn">
+                            <button type="button" onclick="cancelEdit()" class="text-slate-500 font-medium p-2 underline">Hủy chỉnh sửa</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container" class="fixed bottom-20 md:bottom-6 right-0 md:right-6 left-0 md:left-auto px-4 md:px-0 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- ORDER DETAIL MODAL -->
+    <div id="order-detail-modal" class="fixed inset-0 z-[60] bg-slate-900/50 hidden flex-col md:items-center justify-end md:justify-center transition-opacity duration-300 opacity-0">
+        <div class="bg-white rounded-t-3xl md:rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] md:max-h-[85vh] flex flex-col transform md:scale-95 transition-transform duration-300 translate-y-full md:translate-y-0" id="order-detail-content">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-3xl md:rounded-t-2xl flex-shrink-0">
+                <h3 class="font-bold text-lg text-slate-800" id="detail-title">Chi tiết đơn hàng</h3>
+                <button onclick="closeOrderDetail()" class="text-slate-400 hover:text-slate-600 p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar pb-safe" id="detail-body">
+                <!-- Rendered by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- PRICE MODAL -->
+    <div id="price-modal" class="fixed inset-0 z-[60] bg-slate-900/50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300" id="price-modal-content">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-lg text-slate-800">Thêm Bảng Giá (Áo dài)</h3>
+                <button onclick="closePriceModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="price-form" class="p-6 space-y-4" onsubmit="handlePriceSubmit(event)">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">Tên bảng giá</label>
+                    <input type="text" id="p-name" required placeholder="VD: Nữ" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Giới tính</label>
+                        <div class="relative">
+                            <select id="p-gender" required class="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 appearance-none cursor-pointer">
+                                <option value="Nữ">Nữ</option>
+                                <option value="Nam">Nam</option>
+                                <option value="Bất kỳ">Bất kỳ</option>
+                            </select>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Năm áp dụng</label>
+                        <input type="number" id="p-year" required placeholder="VD: 2026" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Từ ngày</label>
+                        <input type="date" id="p-start" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Đến ngày</label>
+                        <input type="date" id="p-end" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">Giá tiền (đ)</label>
+                    <input type="number" id="p-price" required placeholder="VD: 450000" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div class="flex items-center gap-3 pt-2">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="p-active" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <span class="ml-3 text-sm font-bold text-slate-700">Hiển thị lúc thêm đơn</span>
+                    </label>
+                </div>
+                <div class="pt-4 flex gap-3">
+                    <button type="button" onclick="closePriceModal()" class="flex-1 px-4 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl text-sm hover:bg-slate-200">Hủy</button>
+                    <button type="submit" class="flex-1 px-4 py-3 bg-sky-500 text-white font-bold rounded-xl text-sm hover:bg-sky-600 shadow-sm">Lưu Giá</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+
+    <!-- App scripts (thu tu load: config -> utils -> data -> sheets -> UI -> init) -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/sheets.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/orders.js"></script>
+    <script src="js/prices.js"></script>
+    <script src="js/form.js"></script>
+    <script src="js/order-detail.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
