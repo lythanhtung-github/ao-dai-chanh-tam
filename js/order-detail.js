@@ -168,13 +168,16 @@ function renderOrderDetail() {
             ${remaining > 0 ? `
                 <div class="flex flex-col sm:flex-row gap-2 mb-4">
                     <input type="number" id="detail-pay-amount" placeholder="Nhập số tiền nộp..." class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
-                    <input type="date" id="detail-pay-date" value="${parseDateToInputFormat(getTodayFormatted())}" title="Ngày nộp tiền" aria-label="Ngày nộp tiền" class="px-3 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-700 cursor-pointer">
-                    <div class="relative flex-shrink-0">
-                        <select id="detail-pay-method" class="w-full sm:w-auto pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 appearance-none cursor-pointer text-slate-700">
-                            <option value="Chuyển khoản" selected>Chuyển khoản</option>
-                            <option value="Tiền mặt">Tiền mặt</option>
-                        </select>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                    <!-- Mobile: ngày + hình thức cùng 1 dòng; PC: sm:contents trả về hàng chung với số tiền -->
+                    <div class="flex gap-2 sm:contents">
+                        <input type="date" id="detail-pay-date" value="${parseDateToInputFormat(getTodayFormatted())}" title="Ngày nộp tiền" aria-label="Ngày nộp tiền" class="flex-1 sm:flex-none px-3 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-700 cursor-pointer">
+                        <div class="relative flex-1 sm:flex-initial">
+                            <select id="detail-pay-method" class="w-full sm:w-auto pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 appearance-none cursor-pointer text-slate-700">
+                                <option value="Chuyển khoản" selected>Chuyển khoản</option>
+                                <option value="Tiền mặt">Tiền mặt</option>
+                            </select>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                        </div>
                     </div>
                     <button onclick="addPaymentInstallment('${order.id}')" class="px-5 py-3 ${order.type === 'tui' ? 'bg-amber-500 hover:bg-amber-600' : 'bg-sky-500 hover:bg-sky-600'} text-white font-bold rounded-xl text-sm shadow-sm whitespace-nowrap transition-colors w-full sm:w-auto">Nộp tiền</button>
                 </div>
